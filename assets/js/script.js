@@ -21,10 +21,30 @@ $(document).ready(() => {
 });
 function output(response){
     let data = JSON.stringify(response.data, null, "\t");
-        let headers = JSON.stringify(response.headers, undefined, 2);
-        document.getElementById('code').innerText = data;
+    let headers = JSON.stringify(response.headers, undefined, 2);
+    document.getElementById('code').innerText = data;
+    document.getElementById('headers').innerText = headers;
+    document.getElementById('status').innerText = response.status;
+}
+function outputError(error){
+    // document.getElementById('code').innerText = 'Error '+ error.message;
+    // document.getElementById('status').innerText = error.response.status;
+    if (error.response) {
+        let headers = JSON.stringify(error.response.headers, undefined, 2);
+        document.getElementById('code').innerText = 'Error '+ error.message;
         document.getElementById('headers').innerText = headers;
-        document.getElementById('status').innerText = response.status;
+        document.getElementById('status').innerText = error.response.status;
+    } else if (error.request) {
+        // The request was made but no response was received
+        let errorReq = JSON.stringify(error.request, undefined, 2);
+        document.getElementById('code').innerText = errorReq + ' 500 (Internal Server Error)';
+        document.getElementById('status').innerText = '';
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.log('Error', error.message);
+    }
+    Materialize.toast('There was an error :(', 4000, 'red')
+    console.log(error.config);
 }
 function showLoading(){
     document.getElementById('loading').classList.remove('hiddendiv');
@@ -42,11 +62,12 @@ function getRequest(query){
         output(response);
     })
     .catch(function (error) {
-        console.log(error);
+        // console.log(error);
+        // console.log(error.response.status);
+        outputError(error);
         hideLoading();
     });
 }
-
 
 function postRequest(query){
     showLoading();
@@ -57,11 +78,10 @@ function postRequest(query){
         output(response);
     })
     .catch(function (error) {
-        console.log(error);
+        outputError(error);
         hideLoading();
     });
 }
-
 
 function putRequest(query){
     showLoading();
@@ -72,11 +92,10 @@ function putRequest(query){
         output(response);
     })
     .catch(function (error) {
-        console.log(error);
+        outputError(error);
         hideLoading();
     });
 }
-
 
 function deleteRequest(query){
     showLoading();
@@ -87,7 +106,7 @@ function deleteRequest(query){
         console.log(response);
     })
     .catch(function(error){
-        console.log(error);
+        outputError(error);
         hideLoading();
     });
 }
